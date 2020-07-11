@@ -1,0 +1,334 @@
+#Updated: 2.0
+#No Bug
+
+options:
+	config: plugins/Nick Hypixel/config.yml
+	message: plugins/Nick Hypixel/message.yml 
+	
+on script load:
+	set {_&} to "&"
+	if yaml list "randomnick" from file "{@config}" is not set:
+		add "UnyuGaming2" to yaml list "randomnick" from file "{@config}"
+		add "InOPKO" to yaml list "randomnick" from file "{@config}"
+		add "Doreman" to yaml list "randomnick" from file "{@config}"
+		add "UKtoYou" to yaml list "randomnick" from file "{@config}"
+		add "Steve123" to yaml list "randomnick" from file "{@config}"
+		add "Alex123" to yaml list "randomnick" from file "{@config}"
+		add "LongMan" to yaml list "randomnick" from file "{@config}"
+		add "ShortMan" to yaml list "randomnick" from file "{@config}"
+	if yaml list "blacklist-nick" from file "{@config}" is not set:
+		add "Notch" to yaml list "blacklist-nick" from file "{@config}"
+		add "MOJANG" to yaml list "blacklist-nick" from file "{@config}"
+		add "Bitch" to yaml list "blacklist-nick" from file "{@config}"
+	if yaml value "Default-prefix" from file "{@config}" is not set:
+		set yaml value "Default-prefix" from file "{@config}" to "%{_&}%f"
+	if yaml value "VIP-prefix" from file "{@config}" is not set:
+		set yaml value "VIP-prefix" from file "{@config}" to "%{_&}%8[%{_&}%aVIP%{_&}%8] %{_&}%f"
+	if yaml value "VIP+-prefix" from file "{@config}" is not set:
+		set yaml value "VIP+-prefix" from file "{@config}" to "%{_&}%8[%{_&}%aVIP%{_&}%e+%{_&}%8] %{_&}%f"
+	if yaml value "MVP-prefix" from file "{@config}" is not set:
+		set yaml value "MVP-prefix" from file "{@config}" to "%{_&}%8[%{_&}%bMVP%{_&}%8] %{_&}%f"
+	if yaml value "MVP+-prefix" from file "{@config}" is not set:
+		set yaml value "MVP+-prefix" from file "{@config}" to "%{_&}%8[%{_&}%bMVP%{_&}%c+%{_&}%8] %{_&}%f"
+	if yaml value "prefix" from file "{@message}" is not set:
+		set yaml value "prefix" from file "{@message}" to "%{_&}%8[%{_&}%e%{_&}%lNick%{_&}%8] %{_&}%f"
+	if yaml value "nothavepermission" from file "{@message}" is not set:
+		set yaml value "nothavepermission" from file "{@message}" to "%{_&}%cSorry, you not have enough permission."
+	if yaml value "console-mustplayer" from file "{@message}" is not set:
+		set yaml value "console-mustplayer" from file "{@message}" to "%{_&}%cYou must be a player to use this command"
+	if yaml value "already-nicked" from file "{@message}" is not set:
+		set yaml value "already-nicked" from file "{@message}" to "You already nicked."
+	if yaml value "set-nick" from file "{@message}" is not set:
+		set yaml value "set-nick" from file "{@message}" to "Succesfully set your nick to %{_&}%e<NICK>"
+	if yaml value "unnick" from file "{@message}" is not set:
+		set yaml value "unnick" from file "{@message}" to "Succesfully unnick!"
+	if yaml value "nick-blacklist" from file "{@message}" is not set:
+		set yaml value "nick-blacklist" from file "{@message}" to "Nick <NICK> is blacklisted. Type your name again!"
+	if yaml value "nick-already-online" from file "{@message}" is not set:
+		set yaml value "nick-already-online" from file "{@message}" to "A player with this nick is already online in this server, Type your name again in chat!"
+
+	set {PREFIX} to yaml value "prefix" from file "{@message}"
+	set {NOPERM} to yaml value "nothavepermission" from file "{@message}"
+	set {MUSTBEPLAYER} to yaml value "console-mustplayer" from file "{@message}" 
+	set {ALREADYNICKED} to yaml value "already-nicked" from file "{@message}"
+	set {CONFIGRANDOMNICK::*} to yaml list "randomnick" from file "{@config}"
+	set {DEFAULTPREFIX} to yaml value "Default-prefix" from file "{@config}"
+	set {VIPPREFIX} to yaml value "VIP-prefix" from file "{@config}"
+	set {VIP+PREFIX} to yaml value "VIP+-prefix" from file "{@config}"
+	set {MVPPREFIX} to yaml value "MVP-prefix" from file "{@config}"
+	set {MVP+PREFIX} to yaml value "MVP+-prefix" from file "{@config}"
+	set {SETNICK} to yaml value "set-nick" from file "{@message}"
+	set {UNNICK} to yaml value "unnick" from file "{@message}"
+	set {BLACKLISTNICK::*} to yaml list "blacklist-nick" from file "{@config}"
+	set {THISNICKBLACKLIST} to yaml value "nick-blacklist" from file "{@message}"
+	set {NICKALREADYONLINE} to yaml value "nick-already-online" from file "{@message}"
+	
+on script load:
+	delete {randomnick::*}
+	loop {CONFIGRANDOMNICK::*}:
+		add loop-value to {randomnick::*}
+	
+options:
+	logo: %colored {PREFIX}%
+	noperm: %colored {NOPERM}%
+	nickperm: nick.use
+	nickadmin: nick.admin
+	
+on script unload:
+	loop all players:
+		if loop-player's name is "%{RELOADER}%":
+			send "{@logo} Reloading config files.." to loop-player
+	
+on script load:
+	loop all players:
+		if loop-player's name is "%{RELOADER}%":
+			send "{@logo} Succesfully reloaded all config." to loop-player	
+	
+command /nick [<text>] [<text>]:
+	aliases: /nickname 
+	description: To change your Nicknames and Rank!
+	usage: /nick 
+	permission: Tes.Tes 
+	trigger:
+		if sender is console:
+			send "{@logo} %colored {MUSTBEPLAYER}%"
+		if sender is player:
+			if player has permission "{@nickperm}" or "{@nickadmin}":
+				if {nick.%player%.nicked} is true:
+					send "{@logo} %colored {ALREADYNICKED}%"
+				else:
+					if arg 1 is not set:
+						set {_book} to a new book
+						set {_component} to a new text component with "&0Let's get you set up%nl%With your nickname!%nl%First, you'll need to choose with &0&lRANK%nl%&0you would like to be shown as when nicked.%nl%"
+						add hover event with action SHOW_TEXT with text "&7Choose the rank" to text component {_component} 
+						set {_component2} to a new text component with "%nl%&0➤ &8Default"
+						add hover event with action SHOW_TEXT with text "&fClick here to be show as Default" to text component {_component2} 
+						add click event with action RUN_COMMAND with execute "/wakoakwokawok default" to text component {_component2} 
+						set {_comvipprefix} to {VIPPREFIX}
+						replace all "[" with "" in {_comvipprefix}
+						replace all "]" with "" in {_comvipprefix}
+						set {_component3} to a new text component with "%nl%&0➤ %colored {_comvipprefix}%"
+						add hover event with action SHOW_TEXT with text "&fClick here to be show as %colored {_comvipprefix}%" to text component {_component3} 
+						add click event with action RUN_COMMAND with execute "/wakoakwokawok vip" to text component {_component3} 
+						set {_comvip+prefix} to {VIP+PREFIX}
+						replace all "[" with "" in {_comvip+prefix}
+						replace all "]" with "" in {_comvip+prefix}
+						set {_component4} to a new text component with "%nl%&0➤ %colored {_comvip+prefix}%"
+						add hover event with action SHOW_TEXT with text "&fClick here to be show as %colored {_comvip+prefix}%" to text component {_component4} 
+						add click event with action RUN_COMMAND with execute "/wakoakwokawok vip+" to text component {_component4}
+						set {_commvpprefix} to {MVPPREFIX}
+						replace all "[" with "" in {_commvpprefix}
+						replace all "]" with "" in {_commvpprefix}
+						set {_component5} to a new text component with "%nl%&0➤ %colored {_commvpprefix}%"
+						add hover event with action SHOW_TEXT with text "&fClick here to be show as %colored {_commvpprefix}%" to text component {_component5} 
+						add click event with action RUN_COMMAND with execute "/wakoakwokawok mvp" to text component {_component5}
+						set {_commvp+prefix} to {MVP+PREFIX}
+						replace all "[" with "" in {_commvp+prefix}
+						replace all "]" with "" in {_commvp+prefix}
+						set {_component6} to a new text component with "%nl%&0➤ %colored {_commvp+prefix}%"
+						add hover event with action SHOW_TEXT with text "&fClick here to be show as %colored {_commvp+prefix}%" to text component {_component6} 
+						add click event with action RUN_COMMAND with execute "/wakoakwokawok mvp+" to text component {_component6} 
+						add text component {_component} and {_component2} and {_component3} and {_component4} and {_component5} and {_component6} to book {_book}
+						open book {_book} to player
+					else:
+						if player does not have permission "{@nickadmin}":
+							send "{@logo} Use /nick"
+							stop
+				if arg 1 is "admin":
+					if player has permission "{@nickadmin}":
+						send "&6&m&l*&6&m-------------------&r &e&lNicks &6&m-------------------&6&m&l*&r"
+						send " &e/nick reload &f- Reload UnyuNick"
+						send " &e/nick list &f- See nick list of RandomNick"
+						send " &e/nick author &f- See the author of Nick Plugin"
+						send " &e/nick version &f- See the version of Nick Plugin"
+						send "&6&m&l*&6&m--------------------------------------------&6&l&m*"
+					else:
+						send "{@logo} {@noperm}"
+				if arg 1 is "author":
+					if player has permission "{@nickadmin}":
+						send "&6&m&l*&6&m-------------------&r &e&lNicks &6&m-------------------&6&m&l*&r"
+						send "  &eAuthor/Creator: &dUnyuGaming2"
+						send "&6&m&l*&6&m--------------------------------------------&6&l&m*"
+					else:
+						send "{@logo} {@noperm}"
+				if arg 1 is "version":
+					if player has permission "{@nickadmin}":
+						send "&6&m&l*&6&m-------------------&r &e&lNicks &6&m-------------------&6&m&l*&r"
+						send "  &eVersion of Nick: &d2.0"
+						send "&6&m&l*&6&m--------------------------------------------&6&l&m*"
+					else:
+						send "{@logo} {@noperm}"
+				if arg 1 is "reload":
+					if player has permission "{@nickadmin}":
+						set {RELOADEXECUTOR} to player 
+						execute console command "sk reload %script%"
+					else:
+						send "{@logo} {@noperm}"
+				if arg 1 is "list":
+					if player has permission "{@nickadmin}":
+						if size of {randomnick::*} = 0:
+							send "{@logo} No nicks is found in RandomNick!"
+						else:
+							send "{@logo} In RandomNick is have &e%number of {randomnick::*}% &fnicks"
+							send "{@logo} Nickname: &e%{randomnick::*}%"
+					else:
+						send "{@logo} {@noperm}"
+				if arg 1 is not "admin" or "add" or "remove" or "author" or "version" or "reload" or "list":
+					if player has permission "{@nickadmin}":
+						send "&6&m&l*&6&m-------------------&r &e&lNicks &6&m-------------------&6&m&l*&r"
+						send " &e/nick reload &f- Reload UnyuNick"
+						send " &e/nick add <nick> &f- Add nick to RandomNick!"
+						send " &e/nick remove <nick> &f- Remove nick from RandomNick!"
+						send " &e/nick list &f- See nick list of RandomNick"
+						send " &e/nick author &f- See the author of Nick Plugin"
+						send " &e/nick version &f- See the version of Nick Plugin"
+						send "&6&m&l*&6&m--------------------------------------------&6&l&m*"
+					else:
+						send "{@logo} {@noperm}"
+			else:
+				send "{@logo} {@noperm}"
+								
+command /wakoakwokawok [<text>]:
+	trigger:
+		if arg 1 is "default":
+			set {prefix.%player%} to "%colored {DEFAULTPREFIX}%"
+			make player execute command "/kskkasokas changenick"
+		if arg 1 is "vip":
+			set {prefix.%player%} to "%colored {VIPPREFIX}%"
+			make player execute command "/kskkasokas changenick"
+		if arg 1 is "vip+":
+			set {prefix.%player%} to "%colored {VIP+PREFIX}%"
+			make player execute command "/kskkasokas changenick"
+		if arg 1 is "mvp":
+			set {prefix.%player%} to "%colored {MVPPREFIX}%"
+			make player execute command "/kskkasokas changenick"
+		if arg 1 is "mvp+":
+			set {prefix.%player%} to "%colored {MVP+PREFIX}%"
+			make player execute command "/kskkasokas changenick"
+		
+command /kskkasokas [<text>]:
+	trigger:
+		if arg 1 is "changenick":
+			set {_book} to a new book 
+			set {_component} to a new text component with "&0Alright, Now you'll need%nl%&0to choose the &0&lNAME%nl%&0to use!%nl%"
+			set {_component2} to a new text component with "%nl%&0&l➤ &0Enter a name"
+			add click event with action RUN_COMMAND with execute "/kskkasokas changechatname" to text component {_component2}
+			add hover event with action SHOW_TEXT with text "&fClick to enter a name" to text component {_component2}
+			set {_component3} to a new text component with "%nl%&0&l➤ &0Use randomname"
+			add click event with action RUN_COMMAND with execute "/kskkasokas changerandom" to text component {_component3}
+			add hover event with action SHOW_TEXT with text "&fClick to use a randomname" to text component {_component3}
+			set {_component4} to a new text component with "%nl%%nl%&0To go back te being%nl%&0your usual shelf type:%nl%&0&l/unnick"
+			add text component {_component} and {_component2} and {_component3} and {_component4} to book {_book}
+			open book {_book} to player
+		if arg 1 is "changechatname":
+			set {chat.nick.%player%} to true 
+			send "{@logo} Type your name in chat!"
+		if arg 1 is "changerandom":
+			set {nick.%player%.on} to a random element out of {randomnick::*}
+			set {_book} to a new book 
+			set {_component} to a new text component with "&0We've generated a%nl%&0random username for%nl%&0you:"
+			set {_component2} to a new text component with "%nl%&0&l%{nick.%player%.on}%"
+			set {_component3} to a new text component with "%nl%%nl%        &aUse Name"
+			add click event with action RUN_COMMAND with execute "/kskkasokas changeready" to text component {_component3}
+			add hover event with action SHOW_TEXT with text "&fClick to &a&lUSE THIS NAME" to text component {_component3}
+			set {_component4} to a new text component with "%nl%       &cTRY AGAIN"
+			add click event with action RUN_COMMAND with execute "/kskkasokas changerandom" to text component {_component4}
+			add hover event with action SHOW_TEXT with text "&fClick to &c&lTRY AGAIN" to text component {_component4}
+			add text component {_component} and {_component2} and {_component3} and {_component4} to book {_book} 
+			open book {_book} to player
+		if arg 1 is "changeready":
+			loop all players:
+				if loop-player is "%{nick.%player%.on}%":
+					send "{@logo} %colored {NICKALREADYONLINE}%"
+					set {chat.nick.%player%} to true 
+				else:
+					set yaml value "nickname" from file "plugins/Essentials/userdata/%uuid of player%.yml" to "%{nick.%player%.on}%"
+					execute console command "essentials reload"
+					set player's prefix to "%{prefix.%player%}%"
+					set player's tab name to "%{nick.%player%.on}%"
+					set player's nametag to "%{nick.%player%.on}%"
+					set {_sntp} to {SETNICK}
+					replace all "<NICK>" with "%{nick.%player%.on}%" in {_sntp}
+					send "{@logo} %colored {_sntp}%"
+					set {nick.%player%.nicked} to true
+					delete {nick.%player%.on}
+					delete {prefix.%player%}
+					delete {chat.nick.%player%}
+
+command /unnick:
+	trigger:
+		if player has permission "{@nickperm}" or "{@nickadmin}":
+			if {nick.%player%.nicked} is true:
+				delete {nick.%player%.nicked}
+				set yaml value "nickname" from file "plugins/Essentials/userdata/%uuid of player%.yml" to ""
+				set player's tab name to "%player%"
+				set player's nametag to "%player%"
+				set player's prefix to ""
+				send "{@logo} %{UNNICK}%"
+				execute console command "essentials reload"
+			else:
+				send "{@logo} You are not nicked"
+		else:
+			send "{@logo} {@noperm}"
+
+on chat:
+	if {chat.nick.%player%} is true:
+		cancel event
+		loop {BLACKLISTNICK::*}:
+			if message is "%loop-value%":
+				set {_tnib} to {THISNICKBLACKLIST} 
+				replace all "<NICK>" with "%loop-value%" in {_tnib}
+				send "{@logo} %colored {_tnib}%"
+				stop
+			else:
+				delete {chat.nick.%player%}
+				replace all "?" in message with ""
+				replace all "&" in message with ""
+				replace all " " in message with ""
+				replace all "," in message with ""
+				replace all "<" in message with ""
+				replace all "." in message with ""
+				replace all ">" in message with ""
+				replace all "/" in message with ""
+				replace all "?" in message with ""
+				replace all "'" in message with ""
+				replace all """" in message with ""
+				replace all ";" in message with ""
+				replace all ":" in message with ""
+				replace all "[" in message with ""
+				replace all "{" in message with ""
+				replace all "}" in message with ""
+				replace all "]" in message with ""
+				replace all "!" in message with ""
+				replace all "@" in message with ""
+				replace all "##" in message with ""
+				replace all "$" in message with ""
+				replace all "%%" in message with ""
+				replace all "^" in message with ""
+				replace all "*" in message with ""
+				replace all "(" in message with ""
+				replace all ")" in message with ""
+				replace all "_" in message with ""
+				replace all "-" in message with ""
+				replace all "+" in message with ""
+				replace all "=" in message with ""
+				set {nick.%player%.on} to message
+				make player execute command "/kskkasokas changeready"
+				stop
+			
+on quit:
+	if {nick.%player%.nicked} is true:
+		make player execute command "/unnick"
+		
+on join:
+	delete {chat.nick.%player%}
+	delete {nick.%player%.nicked}
+				
+every 3 seconds:
+	loop all players:
+		if {nick.%loop-player%.nicked} is true:
+			set action bar of loop-player to "&fYou are currently &c&lNICKED"				
+				
+command /tesss:
+	trigger:
+		make %player% see glass as armor_stand
